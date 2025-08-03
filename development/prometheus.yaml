@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 1m
+
+scrape_configs:
+  - job_name: "support-watcher"
+    static_configs:
+      - targets: ["localhost:9000"]
