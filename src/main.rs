@@ -1,4 +1,8 @@
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::{
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+    thread::sleep,
+    time::Duration,
+};
 
 use argh::FromArgs;
 use metrics::{describe_gauge, gauge};
@@ -16,7 +20,7 @@ struct SupportWatcher {
 const HEALTH_API: &str = "https://nephthys.hackclub.com/health";
 const STATS_API: &str = "https://nephthys.hackclub.com/api/stats";
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct HealthData {
     healthy: bool,
     slack: bool,
@@ -45,16 +49,16 @@ fn main() -> Result<(), BuildError> {
     );
 
     // Initialize metrics
-    let nephthys_overall_health = gauge!("nephthys_overall_health");
-    describe_gauge!("nephthys_overall_health", "Whether Helper Heidi is healthy");
-    let nephthys_slack_health = gauge!("nephthys_slack_health");
+    let nephthys_overall_health = gauge!("nephthys_overall_up");
+    describe_gauge!("nephthys_overall_up", "Whether Helper Heidi is healthy");
+    let nephthys_slack_health = gauge!("nephthys_slack_up");
     describe_gauge!(
-        "nephthys_slack_health",
+        "nephthys_slack_up",
         "Whether Helper Heidi is connected to the Slack"
     );
-    let nephthys_database_health = gauge!("nephthys_database_health");
+    let nephthys_database_health = gauge!("nephthys_database_up");
     describe_gauge!(
-        "nephthys_database_health",
+        "nephthys_database_up",
         "Whether Helper Heidi is connected to her database"
     );
 
@@ -80,5 +84,9 @@ fn main() -> Result<(), BuildError> {
         nephthys_overall_health.set(if health_data.healthy { 1 } else { 0 });
         nephthys_slack_health.set(if health_data.slack { 1 } else { 0 });
         nephthys_database_health.set(if health_data.database { 1 } else { 0 });
+        println!("Got new health data: {:?}", health_data);
+
+        // Wait a bit so that we don't spam the API
+        sleep(Duration::from_secs(60));
     }
 }
