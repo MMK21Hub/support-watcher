@@ -120,10 +120,6 @@ fn main() -> Result<(), BuildError> {
         gauge!("nephthys_open_tickets").set(stats_data.total_open as f64);
         gauge!("nephthys_in_progress_tickets").set(stats_data.total_in_progress as f64);
         gauge!("nephthys_closed_tickets").set(stats_data.total_closed as f64);
-        println!(
-            "Latest tickets data: {} open, {} in progress, {} closed",
-            stats_data.total_open, stats_data.total_in_progress, stats_data.total_closed
-        );
         // Update user-specific stats
         for stats in stats_data.total_top_3_users_with_closed_tickets {
             let internal_id = stats.user_id.to_string();
