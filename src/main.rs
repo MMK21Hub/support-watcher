@@ -88,11 +88,13 @@ fn main() -> Result<(), BuildError> {
         let health_data: HealthData = match client.get(HEALTH_API).send() {
             Err(error) => {
                 eprintln!("Failed to fetch health data: {}", error);
+                sleep(Duration::from_secs(30));
                 continue;
             }
             Ok(response) => match response.json() {
                 Err(error) => {
                     eprintln!("Failed to parse health data: {}", error);
+                    sleep(Duration::from_secs(30));
                     continue;
                 }
                 Ok(data) => data,
@@ -106,11 +108,13 @@ fn main() -> Result<(), BuildError> {
         let stats_data: StatsData = match client.get(STATS_API).send() {
             Err(error) => {
                 eprintln!("Failed to fetch stats data: {}", error);
+                sleep(Duration::from_secs(30));
                 continue;
             }
             Ok(response) => match response.json() {
                 Err(error) => {
                     eprintln!("Failed to parse stats data: {}", error);
+                    sleep(Duration::from_secs(30));
                     continue;
                 }
                 Ok(data) => data,
