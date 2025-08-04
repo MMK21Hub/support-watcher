@@ -6,3 +6,19 @@
 
 1. `cargo run -- --port 9001`
 2. `prometheus --config.file=env/prometheus.yaml` or `prometheus --config.file=development/prometheus.yaml`
+
+### Working with Docker
+
+#### Build a multi-platform image
+
+1. Set up a Docker BuildKit builder: `docker buildx create --use`
+2. Install required emulators: `docker run --privileged --rm tonistiigi/binfmt --install arm64` (if your local machine is x86_64)
+   - If you're on an ARM64 machine, you should install the `amd64` emulator instead
+   - If you're on another architecture, install both (`arm64,amd64`)
+3. Build it! `docker buildx build --platform linux/amd64,linux/arm64 --load .`
+
+#### Build a multi-platform image and upload it to Docker Hub
+
+1. Check the [tags already available on Docker Hub](https://hub.docker.com/r/mmk21/hide-and-squeak-server)
+2. Use the [`upload-new-docker-image.sh`](upload-new-docker-image.sh) script! E.g. `./upload-new-docker-image.sh v0.1.9`
+   - This will automatically perform the preparatory steps for multi-platform builds (as above), build the image, tag it, and upload it to Docker Hub
