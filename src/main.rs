@@ -124,6 +124,13 @@ fn main() -> Result<(), BuildError> {
             "Latest tickets data: {} open, {} in progress, {} closed",
             stats_data.total_open, stats_data.total_in_progress, stats_data.total_closed
         );
+        // Update user-specific stats
+        for stats in stats_data.total_top_3_users_with_closed_tickets {
+            let internal_id = stats.user_id.to_string();
+            let closed_ticket_count = stats.closed_ticket_count;
+            counter!("nephthys_user_closed_tickets_total", "internal_id" => internal_id, "slack_id" => stats.slack_id)
+                .absolute(closed_ticket_count);
+        }
 
         // Wait a bit so that we don't spam the API
         sleep(Duration::from_secs(60));
