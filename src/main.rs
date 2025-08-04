@@ -69,25 +69,18 @@ fn main() -> Result<(), BuildError> {
         support_watcher.port
     );
 
-    // Initialize metrics
-    let nephthys_overall_health = gauge!("nephthys_overall_up");
+    // Describe some of the metrics
     describe_gauge!("nephthys_overall_up", "Whether Helper Heidi is healthy");
-    let nephthys_slack_health = gauge!("nephthys_slack_up");
     describe_gauge!(
         "nephthys_slack_up",
         "Whether Helper Heidi is connected to the Slack"
     );
-    let nephthys_database_health = gauge!("nephthys_database_up");
     describe_gauge!(
         "nephthys_database_up",
         "Whether Helper Heidi is connected to her database"
     );
-    let tickets_counter = counter!("nephthys_tickets_total");
-    let open_tickets_gauge = gauge!("nephthys_open_tickets");
-    let in_progress_tickets_gauge = gauge!("nephthys_in_progress_tickets");
-    let closed_tickets_gauge = gauge!("nephthys_closed_tickets");
 
-    // Initialize HTTP client
+    // Grab a HTTP client that we can reuse
     let client = reqwest::blocking::Client::new();
 
     loop {
@@ -105,9 +98,9 @@ fn main() -> Result<(), BuildError> {
                 Ok(data) => data,
             },
         };
-        nephthys_overall_health.set(if health_data.healthy { 1 } else { 0 });
-        nephthys_slack_health.set(if health_data.slack { 1 } else { 0 });
-        nephthys_database_health.set(if health_data.database { 1 } else { 0 });
+        gauge!("nephthys_overall_up").set(if health_data.healthy { 1 } else { 0 });
+        gauge!("nephthys_slack_up").set(if health_data.slack { 1 } else { 0 });
+        gauge!("nephthys_database_up").set(if health_data.database { 1 } else { 0 });
 
         // Update the statistic metrics!
         let stats_data: StatsData = match client.get(STATS_API).send() {
@@ -123,10 +116,10 @@ fn main() -> Result<(), BuildError> {
                 Ok(data) => data,
             },
         };
-        tickets_counter.absolute(stats_data.total_tickets);
-        open_tickets_gauge.set(stats_data.total_open as f64);
-        in_progress_tickets_gauge.set(stats_data.total_in_progress as f64);
-        closed_tickets_gauge.set(stats_data.total_closed as f64);
+        counter!("nephthys_tickets_total").absolute(stats_data.total_tickets);
+        gauge!("nephthys_open_tickets").set(stats_data.total_open as f64);
+        gauge!("nephthys_in_progress_tickets").set(stats_data.total_in_progress as f64);
+        gauge!("nephthys_closed_tickets").set(stats_data.total_closed as f64);
         println!(
             "Latest tickets data: {} open, {} in progress, {} closed",
             stats_data.total_open, stats_data.total_in_progress, stats_data.total_closed
