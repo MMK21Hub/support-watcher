@@ -129,6 +129,6 @@ fn main() -> Result<(), BuildError> {
         }
 
         // Wait a bit so that we don't spam the API
-        sleep(Duration::from_secs(60));
+        sleep(Duration::from_secs(30));
     }
 }
