@@ -14,7 +14,7 @@ if [[ ! $(git tag -l "$version_tag") ]]; then
   exit 2
 fi
 
-if [[ $(git branch --show-current) != "main" ]]; then
+if [[ $(git branch --show-current) != "main" && $(git branch --show-current) != "master" ]]; then
   echo "Error: You are currently not on the main git branch. This is probably a mistake."
   echo "Switch away from your feature branch before continuing."
   echo "If you want to continue anyway, press Enter."
