@@ -87,13 +87,13 @@ fn main() -> Result<(), BuildError> {
         // Update Helper Heidi's health
         let health_data: HealthData = match client.get(HEALTH_API).send() {
             Err(error) => {
-                eprintln!("Failed to fetch health data: {}", error);
+                eprintln!("Failed to fetch health data: {:?}", error);
                 sleep(Duration::from_secs(30));
                 continue;
             }
             Ok(response) => match response.json() {
                 Err(error) => {
-                    eprintln!("Failed to parse health data: {}", error);
+                    eprintln!("Failed to parse health data: {:?}", error);
                     sleep(Duration::from_secs(30));
                     continue;
                 }
@@ -107,13 +107,13 @@ fn main() -> Result<(), BuildError> {
         // Update the statistic metrics!
         let stats_data: StatsData = match client.get(STATS_API).send() {
             Err(error) => {
-                eprintln!("Failed to fetch stats data: {}", error);
+                eprintln!("Failed to fetch stats data: {:?}", error);
                 sleep(Duration::from_secs(30));
                 continue;
             }
             Ok(response) => match response.json() {
                 Err(error) => {
-                    eprintln!("Failed to parse stats data: {}", error);
+                    eprintln!("Failed to parse stats data: {:?}", error);
                     sleep(Duration::from_secs(30));
                     continue;
                 }
