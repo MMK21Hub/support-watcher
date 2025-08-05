@@ -15,8 +15,7 @@ COPY --from=builder /app/target/release/support-watcher /app/support-watcher
 ENV TINI_VERSION=v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
-ENTRYPOINT ["/tini", "--"]
 # Install CA certificates so that we can do HTTPS
 RUN apt-get update && apt-get install -y ca-certificates
 
-CMD ["/app/support-watcher"]
+ENTRYPOINT ["/tini", "--", "/app/support-watcher"]
