@@ -14,4 +14,4 @@ COPY --from=builder /app/target/release/support-watcher /app/support-watcher
 # Install CA certificates so that we can do HTTPS
 RUN apt-get update && apt-get install -y ca-certificates
 
-ENTRYPOINT ["/tini", "--", "/app/support-watcher"]
+ENTRYPOINT ["/app/support-watcher"]
