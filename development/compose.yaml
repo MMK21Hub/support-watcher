@@ -1,6 +1,7 @@
 services:
   support-watcher:
     build: ..
+    init: true
     command: ["--port", "9001"]
     ports:
       - 9001:9001
