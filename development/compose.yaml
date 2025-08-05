@@ -1,0 +1,5 @@
+services:
+  support-watcher:
+    build: ..
+    ports:
+      - 9000:9000

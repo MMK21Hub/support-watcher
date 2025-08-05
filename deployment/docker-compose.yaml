@@ -1,0 +1,5 @@
+services:
+  support-watcher:
+    image: mmk21/support-watcher:latest
+    ports:
+      - 9000:9000
