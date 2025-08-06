@@ -19,6 +19,7 @@
 
 #### Build a multi-platform image and upload it to Docker Hub
 
-1. Check the [tags already available on Docker Hub](https://hub.docker.com/r/mmk21/hide-and-squeak-server)
-2. Use the [`upload-new-docker-image.sh`](upload-new-docker-image.sh) script! E.g. `./upload-new-docker-image.sh 0.1.9`
+1. If you're publishing a new version, bump version in `Cargo.toml` and `git tag` the new version
+2. Check the [tags already available on Docker Hub](https://hub.docker.com/r/mmk21/support-watcher/tags)
+3. Use the [`upload-new-docker-image.sh`](upload-new-docker-image.sh) script! E.g. `./upload-new-docker-image.sh 0.1.9`
    - This will automatically perform the preparatory steps for multi-platform builds (as above), build the image, tag it, and upload it to Docker Hub
