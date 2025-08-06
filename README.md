@@ -28,6 +28,16 @@ You can ingest the metrics into Prometheus or a compatible time-series database.
 prometheus --config.file=development/prometheus.yaml
 ```
 
+## Run with Docker
+
+Simply use the `docker-compose.yaml` file provided in [deployment/docker-compose.yaml](deployment/docker-compose.yaml) and deploy it to any server! Add a Prometheus container if desired.
+
+### Quick start with Docker
+
+1. Download the docker compose file: `wget https://raw.githubusercontent.com/MMK21Hub/support-watcher/refs/heads/master/deployment/docker-compose.yaml`
+2. Start the service: `docker compose up -d`
+3. Support Watcher's metrics will be exposed to <http://localhost:9000/metrics>
+
 ## Command line options
 
 - `support-watcher` &ndash; Start the exporter on the default port (`9000`)
@@ -35,7 +45,11 @@ prometheus --config.file=development/prometheus.yaml
 
 ## Contributing tips
 
-### Working with Docker
+### Building the Docker container
+
+#### Testing the Dockerfile locally
+
+1. Build and run the container: `docker compose -f development/compose.yaml up --build`
 
 #### Build a multi-platform image
 
