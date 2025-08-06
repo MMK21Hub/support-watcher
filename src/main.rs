@@ -126,10 +126,26 @@ fn main() -> Result<(), BuildError> {
         gauge!("nephthys_closed_tickets").set(stats_data.total_closed as f64);
         // Update user-specific stats
         for stats in stats_data.total_top_3_users_with_closed_tickets {
-            let internal_id = stats.user_id.to_string();
-            let closed_ticket_count = stats.closed_ticket_count;
-            counter!("nephthys_user_closed_tickets_total", "internal_id" => internal_id, "slack_id" => stats.slack_id)
-                .absolute(closed_ticket_count);
+            counter!(
+                "nephthys_user_closed_tickets_total",
+                "internal_id" => stats.user_id.to_string(),
+                "slack_id" => stats.slack_id
+            )
+            .absolute(stats.closed_ticket_count);
+        }
+        // Update the "previous 24h" metrics
+        gauge!("nephthys_tickets_prev_24h").set(stats_data.prev_day_total as f64);
+        gauge!("nephthys_open_tickets_prev_24h").set(stats_data.prev_day_open as f64);
+        gauge!("nephthys_in_progress_tickets_prev_24h").set(stats_data.prev_day_in_progress as f64);
+        gauge!("nephthys_closed_tickets_prev_24h").set(stats_data.prev_day_closed as f64);
+        // User-specific stats for the previous 24h
+        for stats in stats_data.prev_day_top_3_users_with_closed_tickets {
+            gauge!(
+                "nephthys_user_closed_tickets_prev_24h",
+                "internal_id" => stats.user_id.to_string(),
+                "slack_id" => stats.slack_id
+            )
+            .set(stats.closed_ticket_count as f64);
         }
 
         // Wait a bit so that we don't spam the API
