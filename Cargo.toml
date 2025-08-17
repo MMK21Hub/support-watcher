@@ -2,12 +2,15 @@
 name = "support-watcher"
 description = "Prometheus metrics for the Helper Heidi"
 license = "MIT"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 
 [dependencies]
 argh = "0.1.13"
-chrono = { version = "0.4.41", default-features = false, features = ["alloc", "now"] }
+chrono = { version = "0.4.41", default-features = false, features = [
+    "alloc",
+    "now",
+] }
 metrics = "0.24.2"
 metrics-exporter-prometheus = "0.17.2"
 reqwest = { version = "0.12.22", features = ["blocking", "json"] }
