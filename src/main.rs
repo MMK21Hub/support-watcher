@@ -5,6 +5,7 @@ use std::{
 };
 
 use argh::FromArgs;
+use chrono::{SecondsFormat, Utc};
 use metrics::{counter, describe_gauge, gauge};
 use metrics_exporter_prometheus::{BuildError, PrometheusBuilder};
 use serde::Deserialize;
@@ -18,6 +19,26 @@ struct SupportWatcher {
     /// how often to scrape data from Nephthys, in seconds
     #[argh(option, default = "30")]
     scrape_interval: u64,
+    /// whether to print metrics as they are processed
+    #[argh(switch)]
+    verbose: bool,
+}
+
+pub struct Logger {
+    verbose: bool,
+}
+
+impl Logger {
+    pub fn debug(&self, value: &impl std::fmt::Debug) {
+        if self.verbose {
+            println!("{:?}", value);
+        }
+    }
+    pub fn debug_string(&self, value: String) {
+        if self.verbose {
+            println!("{}", value);
+        }
+    }
 }
 
 const HEALTH_API: &str = "https://nephthys.hackclub.com/health";
@@ -54,8 +75,11 @@ struct UserStatsData {
 }
 
 fn main() -> Result<(), BuildError> {
-    // CLI args
+    // CLI args and logger
     let support_watcher: SupportWatcher = argh::from_env();
+    let logger = Logger {
+        verbose: support_watcher.verbose,
+    };
 
     // Set up Prometheus exporter
     let builder = PrometheusBuilder::new();
@@ -89,6 +113,10 @@ fn main() -> Result<(), BuildError> {
     let client = reqwest::blocking::Client::new();
 
     loop {
+        logger.debug_string(format!(
+            "About to scrape new data for {}",
+            Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true)
+        ));
         // Update Helper Heidi's health
         let health_data: HealthData = match client.get(HEALTH_API).send() {
             Err(error) => {
@@ -105,6 +133,7 @@ fn main() -> Result<(), BuildError> {
                 Ok(data) => data,
             },
         };
+        logger.debug(&health_data);
         gauge!("nephthys_overall_up").set(if health_data.healthy { 1 } else { 0 });
         gauge!("nephthys_slack_up").set(if health_data.slack { 1 } else { 0 });
         gauge!("nephthys_database_up").set(if health_data.database { 1 } else { 0 });
@@ -125,6 +154,7 @@ fn main() -> Result<(), BuildError> {
                 Ok(data) => data,
             },
         };
+        logger.debug(&stats_data);
         counter!("nephthys_tickets_total").absolute(stats_data.total_tickets);
         gauge!("nephthys_open_tickets").set(stats_data.total_open as f64);
         gauge!("nephthys_in_progress_tickets").set(stats_data.total_in_progress as f64);
