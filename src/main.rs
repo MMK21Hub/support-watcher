@@ -15,6 +15,9 @@ struct SupportWatcher {
     /// port to bind to
     #[argh(option, default = "9000")]
     port: u16,
+    /// how often to scrape data from Nephthys, in seconds
+    #[argh(option, default = "30")]
+    scrape_interval: u64,
 }
 
 const HEALTH_API: &str = "https://nephthys.hackclub.com/health";
@@ -154,6 +157,6 @@ fn main() -> Result<(), BuildError> {
         }
 
         // Wait a bit so that we don't spam the API
-        sleep(Duration::from_secs(30));
+        sleep(Duration::from_secs(support_watcher.scrape_interval));
     }
 }
