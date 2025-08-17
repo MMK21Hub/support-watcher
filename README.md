@@ -4,7 +4,7 @@
 
 Support Watcher is a Prometheus exporter that collects statistics about the Summer of Making help channel.
 
-Data provided by [Nephthys](https://nephthys.hackclub.com/), the Summer of Making support bot (also known as Helper Heidi).
+Data provided by [Nephthys](https://nephthys.hackclub.com/), the Summer of Making support bot! (She's also known as Helper Heidi.)
 
 ## Demo
 
@@ -42,6 +42,9 @@ Simply use the `docker-compose.yaml` file provided in [deployment/docker-compose
 
 - `support-watcher` &ndash; Start the exporter on the default port (`9000`)
   - `support-watcher --port <port>` &ndash; Specify a custom port
+  - `support-watcher --verbose` &ndash; Enable logging all received data
+  - `support-watcher --scrape-interval <seconds>` &ndash; Specify how often the API is queried
+    - Please be nice to Helper Heidi by not setting this to something silly like 1 second, because that might overload the API!
 
 ## Contributing tips
 

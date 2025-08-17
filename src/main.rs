@@ -13,7 +13,7 @@ use serde::Deserialize;
 #[derive(FromArgs)]
 /// Prometheus metric exporter for the Helper Heidi bot
 struct SupportWatcher {
-    /// port to bind to
+    /// the port to bind to
     #[argh(option, default = "9000")]
     port: u16,
     /// how often to scrape data from Nephthys, in seconds
