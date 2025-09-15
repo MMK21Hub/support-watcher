@@ -9,6 +9,8 @@ use chrono::{SecondsFormat, Utc};
 use metrics::{counter, describe_gauge, gauge};
 use metrics_exporter_prometheus::{BuildError, PrometheusBuilder};
 use serde::Deserialize;
+mod slack;
+use slack::slack::SlackClient;
 
 #[derive(FromArgs)]
 /// Prometheus metric exporter for the Helper Heidi bot
