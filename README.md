@@ -46,6 +46,17 @@ Simply use the `docker-compose.yaml` file provided in [deployment/docker-compose
   - `support-watcher --scrape-interval <seconds>` &ndash; Specify how often the API is queried
     - Please be nice to Helper Heidi by not setting this to something silly like 1 second, because that might overload the API!
 
+## Adding Slack API integration
+
+Support Watcher can optionally use the Slack API to provide metrics that map user IDs to display names, making it easy to show display names in dashboards. This feature is disabled by default because it requires a Slack bot token.
+
+To use Slack API integration:
+
+1. [Create a Slack app](https://api.slack.com/apps), naming it something like "Support Watcher" (but not exactly that because that's the name I've used) and setting it to the Hack Club workspace
+2. Go to the **OAuth & Permissions** tab of your app config, scroll to the **Bot Token Scopes** section, and add the `users:read` scope
+3. Go to the **Install App** tab and install the app to the Hack Club workspace
+4. Copy the Bot User OAuth Token (starting with `xoxb-`) and save it for later
+
 ## Contributing tips
 
 ### Building the Docker container
