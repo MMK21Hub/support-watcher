@@ -56,6 +56,7 @@ pub mod slack {
                 .query(&[("user", user_id)])
                 .bearer_auth(&self.bot_token)
                 .send()
+                // TODO this is not the best error handling
                 .ok()?;
 
             let parsed: ApiResponse<SlackUser> = response.json().ok()?;
@@ -68,7 +69,7 @@ pub mod slack {
                     Some(display_name)
                 }
                 ApiResponse::Err { error, .. } => {
-                    eprintln!("Error fetching user info: {}", error);
+                    eprintln!("Error parsing user info: {}", error);
                     None
                 }
             }
