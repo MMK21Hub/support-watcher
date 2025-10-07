@@ -26,7 +26,7 @@ struct SupportWatcher {
     verbose: bool,
     /// provide a Slack bot token to enable Slack integration features
     #[argh(option)]
-    slack_token: String,
+    slack_token: Option<String>,
 }
 
 pub struct Logger {
@@ -116,12 +116,18 @@ fn main() -> Result<(), BuildError> {
 
     // Grab a HTTP client that we can reuse
     let client = reqwest::blocking::Client::new();
-    let mut slack = SlackClient::new(support_watcher.slack_token);
+    let mut slack = support_watcher
+        .slack_token
+        .map(|token| SlackClient::new(token));
     loop {
         logger.debug_string(format!(
             "About to scrape new data for {}",
             Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true)
         ));
+
+        // Store relevant user IDs
+        let mut relevant_user_ids: Vec<String> = vec![];
+
         // Update Helper Heidi's health
         let health_data: HealthData = match client.get(HEALTH_API).send() {
             Err(error) => {
@@ -171,14 +177,9 @@ fn main() -> Result<(), BuildError> {
                 "nephthys_user_closed_tickets_total",
                 "internal_id" => stats.user_id.to_string(),
                 "slack_id" => stats.slack_id.to_string(),
-                "slack_display_name" => match slack.get_display_name(&stats.slack_id) {
-                        None => {
-                            todo!("error")
-                        },
-                        Some(name) => name,
-                    },
             )
             .absolute(stats.closed_ticket_count);
+            relevant_user_ids.push(stats.slack_id);
         }
         // Update the "previous 24h" metrics
         gauge!("nephthys_tickets_prev_24h").set(stats_data.prev_day_total as f64);
@@ -192,9 +193,26 @@ fn main() -> Result<(), BuildError> {
             gauge!(
                 "nephthys_user_closed_tickets_prev_24h",
                 "internal_id" => stats.user_id.to_string(),
-                "slack_id" => stats.slack_id
+                "slack_id" => stats.slack_id.to_string(),
             )
             .set(stats.closed_ticket_count as f64);
+            relevant_user_ids.push(stats.slack_id);
+        }
+        // If we have Slack available, provide a mapping of user IDs to display names
+        if let Some(client) = &mut slack {
+            describe_gauge!("slack_user_info", "Maps Slack user IDs to display names");
+            for user_id in relevant_user_ids {
+                if let Some(display_name) = client.get_display_name(&user_id) {
+                    gauge!(
+                        "slack_user_info",
+                        "slack_id" => user_id,
+                        "display_name" => display_name,
+                    )
+                    .set(1);
+                } else {
+                    eprintln!("User {} could not be found on Slack", user_id);
+                }
+            }
         }
 
         // Wait a bit so that we don't spam the API
