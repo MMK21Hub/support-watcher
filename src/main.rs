@@ -10,6 +10,7 @@ use metrics::{counter, describe_gauge, gauge};
 use metrics_exporter_prometheus::{BuildError, PrometheusBuilder};
 use serde::Deserialize;
 mod slack;
+use dotenv::dotenv;
 use slack::slack::SlackClient;
 
 #[derive(FromArgs)]
@@ -80,8 +81,9 @@ struct UserStatsData {
 }
 
 fn main() -> Result<(), BuildError> {
-    // CLI args and logger
+    // CLI args, env, and logger
     let support_watcher: SupportWatcher = argh::from_env();
+    dotenv().ok();
     let logger = Logger {
         verbose: support_watcher.verbose,
     };
