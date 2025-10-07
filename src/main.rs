@@ -24,6 +24,9 @@ struct SupportWatcher {
     /// whether to print metrics as they are processed
     #[argh(switch)]
     verbose: bool,
+    /// provide a Slack bot token to enable Slack integration features
+    #[argh(option)]
+    slack_token: Option<String>,
 }
 
 pub struct Logger {
@@ -113,6 +116,10 @@ fn main() -> Result<(), BuildError> {
 
     // Grab a HTTP client that we can reuse
     let client = reqwest::blocking::Client::new();
+    let mut slack = match support_watcher.slack_token {
+        None => None,
+        Some(token) => Some(SlackClient::new(token)),
+    };
 
     loop {
         logger.debug_string(format!(
@@ -167,7 +174,16 @@ fn main() -> Result<(), BuildError> {
             counter!(
                 "nephthys_user_closed_tickets_total",
                 "internal_id" => stats.user_id.to_string(),
-                "slack_id" => stats.slack_id
+                "slack_id" => stats.slack_id,
+                "slack_display_name" => match &slack {
+                    None => "".to_string(),
+                    Some(slack) => match slack.get_display_name(&stats.slack_id) {
+                        None => {
+                            todo!("error")
+                        },
+                        Some(name) => name,
+                    },
+                }
             )
             .absolute(stats.closed_ticket_count);
         }

@@ -43,6 +43,8 @@ pub mod slack {
             }
         }
 
+        /// Get the display name of the provided Slack user.
+        /// Caches API responses in memory.
         pub fn get_display_name(&mut self, user_id: &str) -> Option<String> {
             if let Some(cached_name) = self.display_name_cache.get(user_id) {
                 return Some(cached_name.clone());
