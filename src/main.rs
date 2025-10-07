@@ -10,7 +10,7 @@ use metrics::{counter, describe_gauge, gauge};
 use metrics_exporter_prometheus::{BuildError, PrometheusBuilder};
 use serde::Deserialize;
 mod slack;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use slack::slack::SlackClient;
 
 #[derive(FromArgs)]
