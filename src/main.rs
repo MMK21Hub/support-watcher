@@ -82,8 +82,9 @@ fn main() -> Result<(), BuildError> {
     };
 
     // Resolve the Nephthys API endpoints
-    let health_api = format!("{}/health", support_watcher.nephthys_url);
-    let stats_api = format!("{}/api/stats", support_watcher.nephthys_url);
+    let base_url = support_watcher.nephthys_url.trim_end_matches('/');
+    let health_api = format!("{}/health", base_url);
+    let stats_api = format!("{}/api/stats", base_url);
 
     // Set up Prometheus exporter
     let builder = PrometheusBuilder::new();
