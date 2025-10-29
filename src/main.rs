@@ -22,7 +22,7 @@ struct SupportWatcher {
     /// whether to print metrics as they are processed
     #[argh(switch)]
     verbose: bool,
-    /// base URL for the Nephthys instance to be scraped
+    /// base URL for the Nephthys instance to be scraped, e.g. "https://nephthys.hackclub.com"
     #[argh(option, default = "\"https://nephthys.hackclub.com\".to_string()")]
     nephthys_url: String
 }
