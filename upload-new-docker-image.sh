@@ -49,13 +49,9 @@ else
   fi
 fi
 
-docker buildx build -t $image:$version --platform linux/amd64,linux/arm64 --push .
+echo "Building Docker images and pushing to Docker Hub..."
+docker buildx build -t $image:$version -t $image:latest --platform linux/amd64,linux/arm64 --push .
 if [[ $? -ne 0 ]]; then
   echo "Error: Docker build failed. See output above."
   exit 10
 fi
-docker tag $image:$version $image:latest
-
-echo "Uploading Docker images to Docker Hub"
-docker push $image:$version
-docker push $image:latest
