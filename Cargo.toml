@@ -1,6 +1,6 @@
 [package]
 name = "support-watcher"
-description = "Prometheus metrics for the Helper Heidi"
+description = "Prometheus metrics for the Nephthys support system"
 license = "MIT"
 version = "0.3.0"
 edition = "2024"
