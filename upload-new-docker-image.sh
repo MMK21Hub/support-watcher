@@ -49,7 +49,7 @@ else
   fi
 fi
 
-docker buildx build -t $image:$version --platform linux/amd64,linux/arm64 --load .
+docker buildx build -t $image:$version --platform linux/amd64,linux/arm64 --push .
 if [[ $? -ne 0 ]]; then
   echo "Error: Docker build failed. See output above."
   exit 10
