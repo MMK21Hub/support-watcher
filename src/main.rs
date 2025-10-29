@@ -22,6 +22,9 @@ struct SupportWatcher {
     /// whether to print metrics as they are processed
     #[argh(switch)]
     verbose: bool,
+    /// base URL for the Nephthys instance to be scraped
+    #[argh(option, default = "\"https://nephthys.hackclub.com\".to_string()")]
+    nephthys_url: String
 }
 
 pub struct Logger {
@@ -40,9 +43,6 @@ impl Logger {
         }
     }
 }
-
-const HEALTH_API: &str = "https://nephthys.hackclub.com/health";
-const STATS_API: &str = "https://nephthys.hackclub.com/api/stats";
 
 #[derive(Deserialize, Debug)]
 struct HealthData {
@@ -81,6 +81,10 @@ fn main() -> Result<(), BuildError> {
         verbose: support_watcher.verbose,
     };
 
+    // Resolve the Nephthys API endpoints
+    let health_api = format!("{}/health", support_watcher.nephthys_url);
+    let stats_api = format!("{}/api/stats", support_watcher.nephthys_url);
+
     // Set up Prometheus exporter
     let builder = PrometheusBuilder::new();
     let listen_on = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), support_watcher.port);
@@ -118,7 +122,7 @@ fn main() -> Result<(), BuildError> {
             Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true)
         ));
         // Update Helper Heidi's health
-        let health_data: HealthData = match client.get(HEALTH_API).send() {
+        let health_data: HealthData = match client.get(&health_api).send() {
             Err(error) => {
                 eprintln!("Failed to fetch health data: {:?}", error);
                 sleep(Duration::from_secs(30));
@@ -139,7 +143,7 @@ fn main() -> Result<(), BuildError> {
         gauge!("nephthys_database_up").set(if health_data.database { 1 } else { 0 });
 
         // Update the statistic metrics!
-        let stats_data: StatsData = match client.get(STATS_API).send() {
+        let stats_data: StatsData = match client.get(&stats_api).send() {
             Err(error) => {
                 eprintln!("Failed to fetch stats data: {:?}", error);
                 sleep(Duration::from_secs(30));
