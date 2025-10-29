@@ -22,6 +22,9 @@ struct SupportWatcher {
     /// whether to print metrics as they are processed
     #[argh(switch)]
     verbose: bool,
+    /// base URL for the Nephthys instance to be scraped, e.g. "https://nephthys.hackclub.com"
+    #[argh(option, default = "\"https://nephthys.hackclub.com\".to_string()")]
+    nephthys_url: String
 }
 
 pub struct Logger {
@@ -41,9 +44,6 @@ impl Logger {
     }
 }
 
-const HEALTH_API: &str = "https://nephthys.hackclub.com/health";
-const STATS_API: &str = "https://nephthys.hackclub.com/api/stats";
-
 #[derive(Deserialize, Debug)]
 struct HealthData {
     healthy: bool,
@@ -58,13 +58,13 @@ struct StatsData {
     total_in_progress: u64,
     total_closed: u64,
     total_top_3_users_with_closed_tickets: Vec<UserStatsData>,
-    average_hang_time_minutes: f64,
+    average_hang_time_minutes: Option<f64>,
     prev_day_total: u64,
     prev_day_open: u64,
     prev_day_in_progress: u64,
     prev_day_closed: u64,
     prev_day_top_3_users_with_closed_tickets: Vec<UserStatsData>,
-    prev_day_average_hang_time_minutes: f64,
+    prev_day_average_hang_time_minutes: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -80,6 +80,11 @@ fn main() -> Result<(), BuildError> {
     let logger = Logger {
         verbose: support_watcher.verbose,
     };
+
+    // Resolve the Nephthys API endpoints
+    let base_url = support_watcher.nephthys_url.trim_end_matches('/');
+    let health_api = format!("{}/health", base_url);
+    let stats_api = format!("{}/api/stats", base_url);
 
     // Set up Prometheus exporter
     let builder = PrometheusBuilder::new();
@@ -118,7 +123,7 @@ fn main() -> Result<(), BuildError> {
             Utc::now().to_rfc3339_opts(SecondsFormat::Secs, true)
         ));
         // Update Helper Heidi's health
-        let health_data: HealthData = match client.get(HEALTH_API).send() {
+        let health_data: HealthData = match client.get(&health_api).send() {
             Err(error) => {
                 eprintln!("Failed to fetch health data: {:?}", error);
                 sleep(Duration::from_secs(30));
@@ -139,7 +144,7 @@ fn main() -> Result<(), BuildError> {
         gauge!("nephthys_database_up").set(if health_data.database { 1 } else { 0 });
 
         // Update the statistic metrics!
-        let stats_data: StatsData = match client.get(STATS_API).send() {
+        let stats_data: StatsData = match client.get(&stats_api).send() {
             Err(error) => {
                 eprintln!("Failed to fetch stats data: {:?}", error);
                 sleep(Duration::from_secs(30));
@@ -159,7 +164,9 @@ fn main() -> Result<(), BuildError> {
         gauge!("nephthys_open_tickets").set(stats_data.total_open as f64);
         gauge!("nephthys_in_progress_tickets").set(stats_data.total_in_progress as f64);
         gauge!("nephthys_closed_tickets").set(stats_data.total_closed as f64);
-        gauge!("nephthys_average_hang_time_minutes").set(stats_data.average_hang_time_minutes);
+        if let Some(hang_time) = stats_data.average_hang_time_minutes {
+            gauge!("nephthys_average_hang_time_minutes").set(hang_time);
+        }
         // Update user-specific stats
         for stats in stats_data.total_top_3_users_with_closed_tickets {
             counter!(
@@ -174,8 +181,9 @@ fn main() -> Result<(), BuildError> {
         gauge!("nephthys_open_tickets_prev_24h").set(stats_data.prev_day_open as f64);
         gauge!("nephthys_in_progress_tickets_prev_24h").set(stats_data.prev_day_in_progress as f64);
         gauge!("nephthys_closed_tickets_prev_24h").set(stats_data.prev_day_closed as f64);
-        gauge!("nephthys_average_hang_time_prev_24h_minutes")
-            .set(stats_data.prev_day_average_hang_time_minutes);
+        if let Some(hang_time) = stats_data.prev_day_average_hang_time_minutes {
+            gauge!("nephthys_average_hang_time_prev_24h_minutes").set(hang_time);
+        }
         // User-specific stats for the previous 24h
         for stats in stats_data.prev_day_top_3_users_with_closed_tickets {
             gauge!(
