@@ -68,3 +68,9 @@ Simply use the `docker-compose.yaml` file provided in [deployment/docker-compose
 2. Check the [tags already available on Docker Hub](https://hub.docker.com/r/mmk21/support-watcher/tags)
 3. Use the [`upload-new-docker-image.sh`](upload-new-docker-image.sh) script! E.g. `./upload-new-docker-image.sh 0.1.9`
    - This will automatically perform the preparatory steps for multi-platform builds (as above), build the image, tag it, and upload it to Docker Hub
+
+## Author
+
+&copy; The Hack Foundation and [contributors](https://github.com/MMK21Hub/support-watcher/graphs/contributors), available under the MIT License.
+
+Made with <3 by Mish for [Hack Club](https://hackclub.com/).
